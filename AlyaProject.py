@@ -21,6 +21,44 @@ fig_country_counts.update_layout(
     title={'text': 'Distribution of Country of Origins', 'x': 0.5}
 )
 
+# Define the app layout
+app.layout = html.Div([
+    html.H1("Data Visualization"),
+
+    dcc.RadioItems(
+        id='radio-graph',
+        options=[
+            {'label': 'Country of Origin', 'value': 'country-counts'},
+            {'label': 'Aroma vs. Flavor', 'value': 'aroma-flavor'},
+            {'label': 'Processing Method', 'value': 'processing-method'},
+        ],
+        value='country-counts',
+        labelStyle={'display': 'block'}
+    ),
+
+    dcc.Graph(id='graph-output'),
+
+])
+
+# Define callback to update the graph based on radio button selection
+@app.callback(
+    Output('graph-output', 'figure'),
+    Input('radio-graph', 'value')
+)
+def update_graph(radio_value):
+    if radio_value == 'country-counts':
+        return fig_country_counts
+    elif radio_value == 'aroma-flavor':
+        # Replace with the appropriate scatter plot for aroma vs. flavor
+        # You can reuse your existing fig1
+        return fig1
+    elif radio_value == 'processing-method':
+        # Replace with the appropriate box plot for processing methods
+        # You can reuse your existing fig2
+        return fig2
+
+
+
 # Create the first scatter plot
 fig1 = px.scatter(df, x='Aroma', y='Flavor', color='Country of Origin',
                  labels={'Aroma': 'Aroma', 'Flavor': 'Flavor', 'Country of Origin': 'Country of Origin'},
@@ -35,45 +73,85 @@ fig2 = px.box(df, x='Processing Method', y=['Aroma', 'Flavor'],
              labels={'variable': 'Attribute', 'value': 'Rating', 'Processing Method': 'Processing Method'},
              title='Comparison of Aroma and Flavor Attributes across Processing Methods')
 
-# Define app layout
+# Define the app layout
 app.layout = html.Div([
-    html.H1("MCM7003 Data Visualization Interactive Demo", style={'textAlign': 'center'}),
-    
-    # Radio buttons for selecting the chart
+    html.H1("Data Visualization"),
+
+    dcc.Tabs(id='tabs', value='tab-1', children=[
+        dcc.Tab(label='Bar Chart', value='tab-1'),
+        dcc.Tab(label='Scatter Plot', value='tab-2'),
+        dcc.Tab(label='Box Plot', value='tab-3'),
+    ]),
+
+    html.Div(id='tabs-content'),
+
+    html.Br(),
+
     dcc.RadioItems(
-        id='chart-selector',
+        id='radio-graph',
         options=[
-            {'label': 'Country Counts', 'value': 'country_counts'},
-            {'label': 'Scatter Plot', 'value': 'scatter_plot'},
-            {'label': 'Box Plot', 'value': 'box_plot'},
+            {'label': 'Country of Origin', 'value': 'country-counts'},
+            {'label': 'Aroma vs. Flavor', 'value': 'aroma-flavor'},
+            {'label': 'Processing Method', 'value': 'processing-method'},
         ],
-        value='country_counts',
+        value='country-counts',
         labelStyle={'display': 'block'}
     ),
 
-    # Graph component to display selected chart
-    dcc.Graph(id='graph-output'),
+    html.Br(),
 
-    # Checkboxes for customization options
-    html.Label("Customization Options:", style={'font-weight': 'bold'}),
     dcc.Checklist(
-        id='custom-options',
+        id='checklist',
         options=[
-            {'label': 'Show Grid Lines', 'value': 'show-grid'},
-            {'label': 'Show Markers', 'value': 'show-markers'},
+            {'label': 'Show Grid', 'value': 'grid'},
+            {'label': 'Show Lines', 'value': 'lines'},
         ],
-        value=['show-grid']
-    ),
-    
-    # Tabs for additional information
-    dcc.Tabs(id='tabs', value='tab-1', children=[
-        dcc.Tab(label='Tab 1', value='tab-1'),
-        dcc.Tab(label='Tab 2', value='tab-2'),
-    ]),
-    
-    # Placeholder for tab content
-    html.Div(id='tab-content')
+        value=['grid', 'lines']
+    )
 ])
 
-# Callback to update
+# Define callback to update graphs and beautify them
+@app.callback(
+    Output('tabs-content', 'children'),
+    Output('graph-output', 'figure'),
+    Output('graph1-output', 'figure'),
+    Output('graph2-output', 'figure'),
+    Input('tabs', 'value'),
+    Input('radio-graph', 'value'),
+    Input('checklist', 'value')
+)
+def update_graph(tab, radio_value, checklist_value):
+    fig = None
+    if tab == 'tab-1':
+        fig = fig_country_counts
+    elif tab == 'tab-2':
+        fig = fig1
+    elif tab == 'tab-3':
+        fig = fig2
+
+    # Customize the appearance based on checklist values
+    for value in checklist_value:
+        if value == 'grid':
+            fig.update_xaxes(showgrid=True)
+            fig.update_yaxes(showgrid=True)
+        elif value == 'lines':
+            fig.update_xaxes(showline=True, linewidth=1, linecolor='black')
+            fig.update_yaxes(showline=True, linewidth=1, linecolor='black')
+
+    return html.Div([
+        dcc.Graph(id='graph-output', figure=fig),
+        dcc.Graph(id='graph1-output', figure=fig1),
+        dcc.Graph(id='graph2-output', figure=fig2)
+    ]), fig_country_counts, fig1, fig2
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
+This code adds tabs for different graphs, radio buttons to switch between them, and checkboxes to customize their appearance (show/hide grid and lines). You can further customize the appearance and functionality according to your requirements.
+
+
+
+
+
+
+
 
