@@ -35,12 +35,45 @@ fig2 = px.box(df, x='Processing Method', y=['Aroma', 'Flavor'],
              labels={'variable': 'Attribute', 'value': 'Rating', 'Processing Method': 'Processing Method'},
              title='Comparison of Aroma and Flavor Attributes across Processing Methods')
 
-app.layout = html.Div(
-    [html.H1("Data Visualization"),
-     dcc.Graph(id='graph-output', figure=fig_country_counts),
-	dcc.Graph(id='graph1-output', figure=fig1),
-        dcc.Graph(id='graph2-output', figure=fig2)]
-)
+# Define app layout
+app.layout = html.Div([
+    html.H1("MCM7003 Data Visualization Interactive Demo", style={'textAlign': 'center'}),
+    
+    # Radio buttons for selecting the chart
+    dcc.RadioItems(
+        id='chart-selector',
+        options=[
+            {'label': 'Country Counts', 'value': 'country_counts'},
+            {'label': 'Scatter Plot', 'value': 'scatter_plot'},
+            {'label': 'Box Plot', 'value': 'box_plot'},
+        ],
+        value='country_counts',
+        labelStyle={'display': 'block'}
+    ),
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+    # Graph component to display selected chart
+    dcc.Graph(id='graph-output'),
+
+    # Checkboxes for customization options
+    html.Label("Customization Options:", style={'font-weight': 'bold'}),
+    dcc.Checklist(
+        id='custom-options',
+        options=[
+            {'label': 'Show Grid Lines', 'value': 'show-grid'},
+            {'label': 'Show Markers', 'value': 'show-markers'},
+        ],
+        value=['show-grid']
+    ),
+    
+    # Tabs for additional information
+    dcc.Tabs(id='tabs', value='tab-1', children=[
+        dcc.Tab(label='Tab 1', value='tab-1'),
+        dcc.Tab(label='Tab 2', value='tab-2'),
+    ]),
+    
+    # Placeholder for tab content
+    html.Div(id='tab-content')
+])
+
+# Callback to update
+
